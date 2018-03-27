@@ -6,10 +6,10 @@ import gym
 from gym import error, spaces
 from gym.utils import seeding
 
-try:
-    import mujoco_py
-except ImportError as e:
-    raise error.DependencyNotInstalled("{}. (HINT: you need to install mujoco_py, and also perform the setup instructions here: https://github.com/openai/mujoco-py/.)".format(e))
+# try:
+#     import mujoco_py
+# except ImportError as e:
+#     raise error.DependencyNotInstalled("{}. (HINT: you need to install mujoco_py, and also perform the setup instructions here: https://github.com/openai/mujoco-py/.)".format(e))
 
 
 class RobotEnv(gym.GoalEnv):
