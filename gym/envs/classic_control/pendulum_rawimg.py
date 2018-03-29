@@ -17,7 +17,7 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         self.drawer = DrawImage()
         self.raw_img = None
         self.obs = None
-        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(84,84,3), dtype='float32')
+        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(64,64,3), dtype='float32')
 
 
     def step(self, action):
@@ -49,16 +49,17 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         # self.obs = obs
 
         self.raw_img = self.drawer.draw(cos_theta, sin_theta)
-        return obs
+        return self.raw_img
 
     def get_state(self):
         return self._get_obs()
 
     def goalstate(self):
-        return np.array([0, 1, 0])
+        return np.array([1, 0, 0])
 
     def goalobs(self):
-        return np.array([0, 1, 0])
+        img = self.drawer.draw(1, 0)
+        return img
 
     def close(self):
         if self.viewer is not None:
