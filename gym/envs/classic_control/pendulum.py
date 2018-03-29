@@ -19,6 +19,9 @@ class PendulumEnv(gym.Env):
         high = np.array([1., 1., self.max_speed])
         self.action_space = spaces.Box(low=-self.max_torque, high=self.max_torque, shape=(1,))
         self.observation_space = spaces.Box(low=-high, high=high)
+        self.state_space = spaces.Box(low=-high, high=high)
+
+        # self.state_space = spaces.Box(-np.inf, np.inf, shape=(2,), dtype='float32')
 
         self.seed()
 
@@ -83,6 +86,16 @@ class PendulumEnv(gym.Env):
 
     def close(self):
         if self.viewer: self.viewer.close()
+
+    def get_state(self):
+        return self._get_obs()
+
+    def goalstate(self):
+        return np.array([0, 1, 0])
+
+    def goalobs(self):
+        return np.array([0, 1, 0])
+
 
 def angle_normalize(x):
     return (((x+np.pi) % (2*np.pi)) - np.pi)
