@@ -88,6 +88,14 @@ register(
     id='PendulumRawImg-v0',
     entry_point='gym.envs.classic_control:PendulumRawImgEnv',
     max_episode_steps=200,
+    kwargs={'colorize_velocity': False}
+)
+
+register(
+    id='PendulumRawImg-color-v0',
+    entry_point='gym.envs.classic_control:PendulumRawImgEnv',
+    max_episode_steps=200,
+    kwargs={'colorize_velocity': True}
 )
 
 register(

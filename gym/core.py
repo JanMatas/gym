@@ -243,6 +243,7 @@ class Wrapper(Env):
         self.action_space = self.env.action_space
         self.observation_space = self.env.observation_space
         self.state_space = self.env.state_space
+        self.aux_space = self.env.aux_space
 
         self.reward_range = self.env.reward_range
         self.metadata = self.env.metadata
@@ -317,6 +318,9 @@ class Wrapper(Env):
 
     def goalobs(self):
         return self.env.goalobs()
+
+    def get_aux(self):
+        return self.env.get_aux()
 
 
 class ObservationWrapper(Wrapper):

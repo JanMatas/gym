@@ -13,12 +13,13 @@ import cv2
 
 class PendulumRawImgEnv(pendulum.PendulumEnv):
 
-    def __init__(self):
+    def __init__(self, colorize_velocity=True):
         super().__init__()
-        self.drawer = DrawImage()
+        self.drawer = DrawImage(colorize_velocity)
         self.raw_img = None
         self.obs = None
         self.observation_space = spaces.Box(-np.inf, np.inf, shape=(64,64,3), dtype='float32')
+        self.aux_space = spaces.Box(-8, 8, shape=(1,), dtype='float32')
 
 
     def step(self, action):
@@ -56,6 +57,9 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
     def get_state(self):
         return self._get_obs()
 
+    def get_aux(self):
+        return np.array([self._get_obs()[2]])
+
     def goalstate(self):
         return np.array([1, 0, 0])
 
@@ -70,18 +74,14 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
     def __del__(self):
         self.close()
 
-colors = {
-        'black': np.array([0, 0, 0]),
-        'red': np.array([214, 25, 28])
-    }
-
 
 class DrawImage:
 
-    def __init__(self):
+    def __init__(self, colorize_velocity):
         self.height = 64  # Atari-like image size
         self.width = 64
         self.canvas = np.zeros((self.height, self.width, 3), dtype=np.float32)
+        self.colorize_velocity = colorize_velocity
 
     def draw(self, cos_theta, sin_theta, thetadot):
         self.__clear()
@@ -105,11 +105,14 @@ class DrawImage:
                   [-length_b, half_width, 1],
                   [length_f, half_width, 1],
                   [length_f, -half_width, 1]]).T
-
         rot_points = np.matmul(np.array([[cos_theta, -sin_theta, x0],[sin_theta, cos_theta, y0]]), points).T
 
         pts = np.array([rot_points], np.int32)
-        color = np.array((thetadot * 32, 255, -thetadot * 32))
+        if self.colorize_velocity:
+
+            color = np.array((thetadot * 32, 255, -thetadot * 32))
+        else:
+            color = np.array((0, 255, 0))
         color =np.clip(color, [0.0, 0.0, 0.0], [255.0, 255.0, 255.0])
         cv2.fillPoly(self.canvas, pts, color)
 
