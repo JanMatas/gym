@@ -7,6 +7,7 @@ PendulumEnv.
 
 from gym.envs.classic_control import pendulum
 import numpy as np
+from gym import spaces
 
 
 class PendulumRawImgEnv(pendulum.PendulumEnv):
@@ -16,6 +17,8 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         self.drawer = DrawImage()
         self.raw_img = None
         self.obs = None
+        self.observation_space = spaces.Box(-np.inf, np.inf, shape=(84,84,3), dtype='float32')
+
 
     def step(self, action):
         obs, rw, done, inf = super().step(action)
@@ -23,13 +26,13 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         sin_theta = obs[1]
         self.obs = obs
 
-        # self.raw_img = self.drawer.draw(cos_theta, sin_theta)
-        return obs, rw, done, inf
+        self.raw_img = self.drawer.draw(cos_theta, sin_theta)
+        return self.raw_img, rw, done, inf
 
     def render(self, mode='human'):
         cos_theta = self.obs[0]
         sin_theta = self.obs[1]
-        self.raw_img = self.drawer.draw(cos_theta, sin_theta)
+        # self.raw_img = self.drawer.draw(cos_theta, sin_theta)
         if mode == 'rgb_array':
             return self.raw_img
         elif mode == 'human':
@@ -43,9 +46,9 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         obs = super().reset()
         cos_theta = obs[0]
         sin_theta = obs[1]
-        self.obs = obs
+        # self.obs = obs
 
-        # self.raw_img = self.drawer.draw(cos_theta, sin_theta)
+        self.raw_img = self.drawer.draw(cos_theta, sin_theta)
         return obs
 
     def get_state(self):
