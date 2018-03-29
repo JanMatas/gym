@@ -8,6 +8,7 @@ PendulumEnv.
 from gym.envs.classic_control import pendulum
 import numpy as np
 from gym import spaces
+import cv2
 
 
 class PendulumRawImgEnv(pendulum.PendulumEnv):
@@ -25,8 +26,8 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         cos_theta = obs[0]
         sin_theta = obs[1]
         self.obs = obs
-
-        self.raw_img = self.drawer.draw(cos_theta, sin_theta)
+        theta, thetadot = self.state
+        self.raw_img = self.drawer.draw(cos_theta, sin_theta, thetadot)
         return self.raw_img, rw, done, inf
 
     def render(self, mode='human'):
@@ -47,8 +48,8 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         cos_theta = obs[0]
         sin_theta = obs[1]
         # self.obs = obs
-
-        self.raw_img = self.drawer.draw(cos_theta, sin_theta)
+        theta, thetadot = self.state
+        self.raw_img = self.drawer.draw(cos_theta, sin_theta, thetadot)
         return self.raw_img
 
     def get_state(self):
@@ -58,7 +59,7 @@ class PendulumRawImgEnv(pendulum.PendulumEnv):
         return np.array([1, 0, 0])
 
     def goalobs(self):
-        img = self.drawer.draw(1, 0)
+        img = self.drawer.draw(1, 0, 0)
         return img
 
     def close(self):
@@ -81,10 +82,9 @@ class DrawImage:
         self.width = 64
         self.canvas = np.zeros((self.height, self.width, 3), dtype=np.uint8) + 255
 
-    def draw(self, cos_theta, sin_theta):
+    def draw(self, cos_theta, sin_theta, thetadot):
         self.__clear()
-        self.__draw_rod(cos_theta, sin_theta)
-
+        self.__draw_rod(cos_theta, sin_theta, thetadot)
         return self.canvas
 
     # Draw the elements of the image
@@ -93,25 +93,21 @@ class DrawImage:
 
         self.canvas[:, :, :] = 255
 
-    def __draw_rod(self, cos_theta, sin_theta):
-
-        def draw_square(x, y):
-            self.canvas[y-2:y+2, x-2:x+2] = colors['red']
-
-        rod_length = 30
+    def __draw_rod(self, cos_theta, sin_theta, thetadot):
         x0 = self.width // 2
         y0 = self.height // 2
 
-        x1 = int(x0 + rod_length / 3 * sin_theta)
-        y1 = int(y0 - rod_length / 3 * cos_theta)
+        half_width = 3
+        length_f = 30
+        length_b = 3
+        points = np.array([[-length_b, -half_width, 1 ],
+                  [-length_b, half_width, 1],
+                  [length_f, half_width, 1],
+                  [length_f, -half_width, 1]]).T
 
-        x2 = int(x0 + 2 * rod_length / 3 * sin_theta)
-        y2 = int(y0 - 2 * rod_length / 3 * cos_theta)
+        rot_points = np.matmul(np.array([[cos_theta, -sin_theta, x0],[sin_theta, cos_theta, y0]]), points).T
 
-        x3 = int(x0 + rod_length * sin_theta)
-        y3 = int(y0 - rod_length * cos_theta)
+        pts = np.array([rot_points], np.int32)
+        color = np.array((0 if thetadot < 0 else min(thetadot * 32, 255), 25, 0 if thetadot > 0 else min(-thetadot * 32, 255)))
+        cv2.fillPoly(self.canvas, pts, color)
 
-        draw_square(x0, y0)
-        draw_square(x1, y1)
-        draw_square(x2, y2)
-        draw_square(x3, y3)
